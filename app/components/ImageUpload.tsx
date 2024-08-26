@@ -57,12 +57,26 @@ async function readFileAsBase64(file: File): Promise<string> {
 }
 
 async function identifyPlant(imageData: string): Promise<string> {
-  const genAI = new GoogleGenerativeAI(process.env.NEXT_PUBLIC_GOOGLE_GEMINI_API_KEY!)
-  const model = genAI.getGenerativeModel({ model: 'gemini-pro-vision' })
-
-  const prompt = 'Identify this plant and provide its name, scientific name, and a brief description of its characteristics and care requirements.'
-
-  const result = await model.generateContent([prompt, { inlineData: { data: imageData, mimeType: 'image/jpeg' } }])
-  const response = await result.response
-  return response.text()
-}
+    try {
+      const genAI = new GoogleGenerativeAI(process.env.NEXT_PUBLIC_GOOGLE_GEMINI_API_KEY!);
+      const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+  
+      const prompt = 'Identify this plant and provide its name, scientific name, and a brief description of its characteristics and care requirements.';
+  
+      const result = await model.generateContent([
+        prompt,
+        {
+          inlineData: {
+            mimeType: 'image/jpeg',
+            data: imageData
+          }
+        }
+      ]);
+  
+      const response = await result.response;
+      return response.text();
+    } catch (error) {
+      console.error('Detailed error:', error);
+      throw new Error(`Failed to identify plant: ${error.message}`);
+    }
+  }
